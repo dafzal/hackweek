@@ -4,7 +4,7 @@ from flask.ext import login
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mzuragfsrqnokk:mzuragfsrqnokk@ec2-54-235-132-177.compute-1.amazonaws.com:5432/ddia1c9eioov14'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mzuragfsrqnokk:cb5U50DdTvMIrJH1TtdH7zZxe6@ec2-54-235-132-177.compute-1.amazonaws.com:5432/ddia1c9eioov14'
 #connect('project1', host='mongodb://localhost/database_name')
 app.config['SECRET_KEY'] = 'supersecretkey12345'
 db = SQLAlchemy(app)
@@ -41,7 +41,7 @@ from cal.models import User
 @login_manager.user_loader
 def load_user(userid):
     try:
-    	return User.objects.get(id=userid)
+    	return User.query.get(int(userid))
     except (TypeError, ValueError):
         pass
 # Make current user available on templates
