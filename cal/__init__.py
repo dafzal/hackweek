@@ -22,7 +22,7 @@ app.config['SOCIAL_AUTH_AUTHENTICATION_BACKENDS'] = (
 )
 app.config['SOCIAL_AUTH_FACEBOOK_KEY'] = '1463976000492316'
 app.config['SOCIAL_AUTH_FACEBOOK_SECRET'] = 'b2cb45b169e0349eeacab0cf9fdaee3d'
-
+app.config['SOCIAL_AUTH_FACEBOOK_SCOPE'] = ['email','user_about_me','user_events']
 
 from social.apps.flask_app.template_filters import backends
 app.context_processor(backends)
