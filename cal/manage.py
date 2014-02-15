@@ -9,10 +9,6 @@ manager.add_command('runserver', Server(
   use_debugger = True,
   use_reloader = True))
 
-@app.route('/')
-def test():
-  return 'sup guys'
-
 if __name__ == '__main__':
   app.config['DEBUG'] = True
   app.debug = True
