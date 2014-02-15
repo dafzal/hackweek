@@ -1,5 +1,5 @@
 Flask==0.10.1
 Flask-Script==0.6.4
-flask-mongoengine==0.7.0
+flask-sqlalchemy
 python-social-auth
 flask-security
