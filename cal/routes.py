@@ -2,6 +2,7 @@ from flask import render_template, redirect
 from flask.ext.login import login_required, logout_user
 
 from cal import app
+from gcal import Gcal
 
 
 @app.route('/')
@@ -24,3 +25,4 @@ def logout():
 @app.route('/gcal/connect')
 def gcal_connect():
   gcal = Gcal()
+  gcal.get_list()
