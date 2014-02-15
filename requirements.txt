@@ -3,3 +3,4 @@ Flask-Script==0.6.4
 flask-sqlalchemy
 python-social-auth
 flask-security
+psycopg2

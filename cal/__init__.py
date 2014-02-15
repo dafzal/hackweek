@@ -16,6 +16,16 @@ app.register_blueprint(social_auth)
 from social.apps.flask_app.models import init_social
 init_social(app, db)
 
+app.config['SOCIAL_AUTH_AUTHENTICATION_BACKENDS'] = (
+    'social.backends.facebook.FacebookOAuth2',
+    'social.backends.facebook.FacebookAppOAuth2',
+)
+app.config['SOCIAL_AUTH_FACEBOOK_KEY'] = '1463976000492316'
+app.config['SOCIAL_AUTH_FACEBOOK_SECRET'] = 'b2cb45b169e0349eeacab0cf9fdaee3d'
+
+
+from social.apps.flask_app.template_filters import backends
+app.context_processor(backends)
 
 login_manager = login.LoginManager()
 login_manager.login_view = 'main'
