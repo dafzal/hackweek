@@ -200,6 +200,10 @@ class Event(db.Document):
         yes = url_for('respond', event_id=self.id, user_response=True, _external=True, cookie=i.id)
         no = url_for('respond', event_id=self.id, user_response=False, _external=True, cookie=i.id)
         print 'before send_message'
+        print 'self is ' + str(self)
+        print 'i is ' + str(i)
+        print 'yes ' + str(yes)
+        print 'no ' + str(no)
         html=render_template('email.html', e=self, u=i, yes=yes, no=no)
         print 'html is ' + str(html)
         mail.send_message(to=i.email, html=html, subject=subject)
