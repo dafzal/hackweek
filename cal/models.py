@@ -4,6 +4,45 @@ import facebook
 from flask.ext.security import Security, MongoEngineUserDatastore, \
     UserMixin, RoleMixin, login_required
 import requests
+from dateutil import parser
+import datetime
+
+def get_match(users, start, end, duration):
+  events_list = [u.fb_events() for u in users]
+  while start < end:
+    if all(is_available(events, start) for events in events_list):
+      return start
+    start += datetime.timedelta(minutes=30)
+
+def is_available(events, time, duration):
+  # duration is ignored
+  print 'checking ' + str(time) + ' in ' + str(events)
+  for e in events:
+    if e['start_time'] < time and e['end_time'] > time:
+      print 'miss ' + str(e)
+      return False
+  return True
+
+events_a = [
+  {
+    'start_time': datetime.datetime(month=2,day=15,year=2014, hour=5),
+    'end_time': datetime.datetime(month=2, day=15, year=2014, hour=7)
+  },
+  {
+    'start_time': datetime.datetime(month=2,day=15,year=2014, hour=6),
+    'end_time': datetime.datetime(month=2, day=15, year=2014, hour=7)
+  }
+]
+events_b = [
+  {
+    'start_time': datetime.datetime(month=2,day=15,year=2014, hour=8),
+    'end_time': datetime.datetime(month=2, day=15, year=2014, hour=10)
+  },
+  {
+    'start_time': datetime.datetime(month=2,day=15,year=2014, hour=9),
+    'end_time': datetime.datetime(month=2, day=15, year=2014, hour=11)
+  }
+]
 
 class User(db.Document, UserMixin):
   fb_id = db.StringField()
@@ -38,7 +77,16 @@ class User(db.Document, UserMixin):
         next = r['paging']['next']
       except:
         next = None
-    return ret
+
+    for r in ret:
+      if 'T' not in r['start_time']:
+        r['end_time'] = r['start_time'] + 'T23:59:59-0800'
+        r['end_time'] = parser.parse(r['end_time']).replace(tzinfo=None)
+        r['start_time'] += 'T00:00:00-0800'
+        r['start_time'] = parse.parse(r['start_time']).replace(tzinfo=None)
+    ret = [x for x in ret if x['rsvp_status'] == 'available']
+    return sorted(ret, key=lambda x: x['start_time'])
+
 
   def get_friends(self):
     graph = facebook.GraphAPI(self.fb_key)
