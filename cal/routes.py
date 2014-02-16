@@ -61,6 +61,7 @@ def events(user_id):
   results = get_events(u)
   return jsonify(results)
 
+
 @app.route('/overview')
 def overview():
   return render_template('list_events.html', events=get_events(user=current_user),
@@ -105,6 +106,7 @@ def users():
 @app.route('/events/add',  methods=['GET', 'POST'])
 def add_event():
   data = request.values
+  print str(data)
   from_time_range = parser.parse(data['from_time_range'])
   to_time_range = parser.parse(data['to_time_range'])
   if current_user.is_authenticated():
@@ -122,11 +124,14 @@ def add_event():
 
 @app.route('/events/respond')
 def respond():
-  data = reqeust.POST
+  data = request.values
   response = data['response']
   event = Event.objects.get(id=data['event_id'])
-  responder = User.objects.get(id=data['responder'])
-  r = Response(response=response, event=event, responder=responder)
+  if current_user.is_authenticated():
+    responder = User.objects.get(id=data['responder'])
+  else:
+    responder = User.objects.get(id=data['cookie'])
+  r = Response(response=response, event=event.id, responder=responder.id)
   r.save()
   num_response = Response.objects(event=event).count()
   if num_response >= event.threshold:

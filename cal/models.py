@@ -195,7 +195,10 @@ class Event(db.Document):
             'duration_minutes': self.duration_minutes,
             'status': self.status,
             'creator_id': str(self.creator.id),
-            'invitees': [ invitee.to_json() for invitee in self.invitees]
+            'invitees': [ invitee.to_json() for invitee in self.invitees],
+            'from_time_range': self.from_time_range.isoformat(),
+            'to_time_range': self.to_time_range.isoformat(),
+            'duration': self.duration_minutes,
         }
         # if self.status == 'finalized':
         #     json = json.update({
