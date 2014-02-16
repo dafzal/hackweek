@@ -83,9 +83,14 @@
       </div>
     </div>
     <div style="height:50px"></div>
-    <center>
+    <div class="row">
+      <div class="col-md-10 text-right">
       <button class="btn btn-default btn-large" id="create"> Create Event</button>
-    </center>
+    </div>
+    <div class="col-md-2">
+      <h5><span class='hide' id='show'>Creating...</span></h5>
+    </div>
+    </div>
 <div style="height:200px"></div>
   </div>      
 </div>
@@ -108,6 +113,7 @@ $(document).ready(function(){
   }
   $('#create').click(function(e){
     e.preventDefault();
+    $('#show').removeClass('hide');
     names = []
     $('.ms-selected').each(function(key, value){
       $(value).children('span').each(function(k,v){
@@ -125,7 +131,6 @@ $(document).ready(function(){
     };
     console.log(opts)
     $.post('/events/add',opts,function(data){
-      console.log(data);
       window.location.href = "/overview";
     });
   });
