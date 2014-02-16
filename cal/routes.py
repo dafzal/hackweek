@@ -63,7 +63,7 @@ def events(user_id):
     'created_events': [x.to_json() for x in created_events],
     'invited_events': [x.to_json() for x in invited_events],
   }
-  return jsonify(**results)
+  return jsonify(results)
 
 @app.route('/events')
 def all_events():
