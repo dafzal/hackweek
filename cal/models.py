@@ -193,8 +193,10 @@ class Event(db.Document):
     days = db.StringField() #smtwrfy
 
     def send_invites(self):
+      print 'sending invites'
       for i in self.invitees:
         subject = 'New Invite for ' + i.name + ' from ' + self.creator.name
+        print subject
         yes = url_for('respond', event_id=self.id, user_response=True, _external=True, cookie=i.id)
         no = url_for('respond', event_id=self.id, user_response=False, _external=True, cookie=i.id)
         mail.send_message(to=i.email, html=render_template('email.html', e=self, u=i, yes=yes, no=no), subject=subject)
