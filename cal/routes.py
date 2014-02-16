@@ -24,6 +24,15 @@ def logout():
     logout_user()
     return redirect('/')
 
+@app.route('/events/<user_id>')
+def events(user_id):
+  created_events = Events.objects().filter(Events.creator_id=user_id).all()
+  invited_events = Events.objects().filter(Events.invitees.any(id=user_id)).all()
+  results = {
+    'created_events': created_events.to_json(),
+    'invited_events': invited_events.to_json()
+  }
+
 @app.route('/google_connect')
 def google_connect():
   storage = Storage('calendar.dat')
