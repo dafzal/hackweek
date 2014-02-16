@@ -36,6 +36,7 @@ def google_connect():
   http = credentials.authorize(http)
   service = build("calendar", "v3", http=http)
   calendar_list = service.calendarList().list().execute()
+
   print calendar_list
   return redirect('/')
 
