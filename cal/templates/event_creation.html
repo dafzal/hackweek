@@ -108,7 +108,9 @@ $(document).ready(function(){
     e.preventDefault();
     names = []
     $('.ms-selected').each(function(key, value){
-      names.push($(value).children('span').val())  
+      $(value).children('span').each(function(k,v){
+        names.push($(v).text());
+      })
     });
     opts = {
       'from_time_range': $('#start_time').val(),
