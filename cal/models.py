@@ -41,7 +41,7 @@ class User(db.Document, UserMixin):
     return ret
 
   def get_friends(self):
-    graph = facebook.GraphAPI(self.fb_id)
+    graph = facebook.GraphAPI(self.fb_key)
     friends = graph.get_connections("me", "friends")
     return friends['data']
 
