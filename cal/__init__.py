@@ -26,6 +26,11 @@ app.config['SOCIAL_AUTH_FACEBOOK_KEY'] = '1463976000492316'
 app.config['SOCIAL_AUTH_FACEBOOK_SECRET'] = 'b2cb45b169e0349eeacab0cf9fdaee3d'
 app.config['SOCIAL_AUTH_FACEBOOK_SCOPE'] = ['email','user_about_me','user_events']
 
+app.config['SOCIAL_GOOGLE'] = {
+    'consumer_key': '610521713571.apps.googleusercontent.com',
+    'consumer_secret': 'FJgybwIs_wU8eautMC41PRE0'
+}
+
 from social.apps.flask_app.template_filters import backends
 app.context_processor(backends)
 
