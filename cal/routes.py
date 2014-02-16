@@ -92,7 +92,7 @@ def respond():
 # send out emails/notifications to users
 def notify_users(event):
   # for invitee in event.invitees:
-
+  pass
 
 @app.route('/google_connect')
 def google_connect():
