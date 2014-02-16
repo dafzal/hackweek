@@ -16,6 +16,9 @@
   .footer, .push {
     height: 50; /* .push must be the same height as .footer */
   }
+  .dark-grey-bg {
+    background-color: rgb(77,77,77);
+  }
 </style>
 {% endblock %}
 {% block content %}
@@ -79,7 +82,11 @@
   </div>
 </div>
 
+<div class="dark-grey-bg">
+<center>
 <img src="{{url_for("static",filename="images/home.png")}}" class="img-responsive"></img>
+</center>
+</div>
 
 <div class="jumbotron white-bg">
   <div class="container">
