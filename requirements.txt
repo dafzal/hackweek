@@ -7,3 +7,6 @@ flask-sqlalchemy
 python-social-auth
 flask-security
 psycopg2
+facebook-sdk
+raven
+gunicorn
