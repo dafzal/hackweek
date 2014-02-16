@@ -14,5 +14,4 @@ pymongo==2.6.3
 flask-social
 python-dateutil
 evernote
-flask-sqlalchemy #for memsql
 sendgrid
