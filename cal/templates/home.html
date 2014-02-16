@@ -1,49 +1,107 @@
 {% extends "base.html" %}
-
+{% block extra_css %}
+<style>
+  body {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    padding-top: 50px;
+  }
+  .white-bg {
+    background-color: white;
+  }
+  * {
+  margin: 0;
+  }
+  html, body {
+    height: 100%;
+  }
+  .wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -50px; /* the bottom margin is the negative value of the footer's height */
+  }
+  .footer, .push {
+    height: 50; /* .push must be the same height as .footer */
+  }
+</style>
+{% endblock %}
 {% block content %}
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Let's Meet</a>
+    </div>
+    <ul class="nav navbar-nav navbar-right">
+      <li><a href="#" data-toggle="modal" data-target="#myModal">Sign In</a></li>
+    </ul>
+</nav>
 
-{% macro social_login(provider_id, display_name) %}
+{% macro social_login(provider_id, display_name, image_url) %}
   <form action="{{ url_for('social.login', provider_id=provider_id) }}" method="POST">
-    <input type="submit" value="Login with {{ display_name }}" />
+    <input type="image" src="{{url_for("static",filename=image_url)}}">
   </form>
 {% endmacro %}
 
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Connect with Let's meet</h4>
+      </div>
+      <div class="modal-body">
+        <p> Scheduling meet ups with friends is so much easier with Let's meet. Connect with Facebook or Gmail to enjoy the automatic schedule fitting experience. No more long email threads overheads - Just send an invite and Let's meet! </p>
+        <div class="row">
+          <div class="col-md-6 text-right">
+            {{ social_login('facebook', 'Facebook', 'images/small_fb.png')}}
+          </div>
+          <div class="col-md-6 text-left"> 
+            {{ social_login('google', 'Google', 'images/small_google.png' )}}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-{{ social_login('facebook', 'Facebook' )}}
-{{ social_login('google', 'Google' )}}
 
+<div class="jumbotron white-bg">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 text-right">
+        <h2>We make scheduling meet ups easy</h2>  
+      </div>
+      <div class="col-md-2 text-center">
+        <h2><a class="btn btn-primary btn-large" data-toggle="modal" data-target="#myModal">Get Started</a></h2> 
+      </div>
+    </div>
+  </div>
+</div>
 
+<img src="{{url_for("static",filename="images/home.png")}}" class="img-responsive"></img>
 
+<h1></h1>
+<div class="container">
+  
+</div>
+<h1></h1>
 
-<a href="">Facebook OAuth2</a> <br />
-<a href="/google_connect">Google Connect</a> <br />
-<a href="/add_fakedata">Add fake data</a>
-
-<h1>{% if user.is_authenticated()%}fb key: {{user.fb_key}}{% endif %}</h1>
-<h3>{% if user.is_authenticated()%}google key: {{user.google_key}}{% endif %}</h3>
-{% endblock %}
-
-{% block scripts %}
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
-<script src="https://login.persona.org/include.js" type="text/javascript"></script>
-<script type="text/javascript">
-$(function () {
-    $('#persona').on('click', function (e) {
-        e.preventDefault();
-        var self = $(this);
-
-        navigator.id.get(function (assertion) {
-            if (assertion) {
-                self.parent('form')
-                        .find('input[type=hidden]')
-                        .attr('value', assertion)
-                        .end()
-                    .submit();
-            } else {
-                alert('Some error occurred');
-            }
-        });
-    });
-});
-</script>
+<div class="footer">
+  <nav class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+      <ul class="nav navbar-nav">
+        <li><a href="#">About us</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">@Let's Meet 2014</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
 {% endblock %}
