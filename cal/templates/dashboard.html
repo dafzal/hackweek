@@ -1,4 +1,14 @@
 {% extends "base.html" %}
+{% block extra_css %}
+<link rel='stylesheet' type='text/css' href="{{url_for('static',filename='fullcalendar/css/fullcalendar.css')}}" />
+<link rel='stylesheet' type='text/css' href="{{url_for('static',filename='fullcalendar/css/fullcalendar.print.css')}}" />
+<script type='text/javascript' src="{{url_for('static',filename='fullcalendar/js/fullcalendar.min.js')}}"></script>
+<style>
+  .dark-grey-bg {
+    background-color: rgb(102,102,102);
+  }
+</style>
+{% endblock %}
 {% block content %}
 <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
   <div class="container">
@@ -16,17 +26,26 @@
           <h4><span class="glyphicon glyphicon-plus"></span> Create Event </h4>
         </a>
       </li>
-      <li><a href="#"><h4>Sign out</h4></li>
+      <li><a href="#"><h4>Sign out</h4></a></li>
     </ul>
 </nav>
 
-<div class="jumbotron white-bg">
+<div class="jumbotron white-bg" style='height:100px'>
   <div class="container">
-    <div class="row">
-      <div class="col-md-8 text-left">
-        <h2 class="dark-grey">My Events</h2>  
-      </div>
-    </div>
+    <h2 class="dark-grey">My Events</h2>  
   </div>
 </div>
+
+<div class="dark-grey-bg">
+  <div class="container" id="calendar"></div>
+</div>
+{% endblock %}
+{% block extra_js %} 
+<script>
+  $(document).ready(function() {
+      $('#calendar').fullCalendar({
+          // put your options and callbacks here
+      })
+  });
+</script>
 {% endblock %}
