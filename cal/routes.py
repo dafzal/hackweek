@@ -65,6 +65,9 @@ def events(user_id):
   }
   return jsonify(results)
 
+@app.route('/users')
+def users():
+  return jsonify(data=[x.to_json() for x in User.objects])
 @app.route('/events/add')
 def add_event():
   data = request.POST
@@ -105,12 +108,12 @@ def notify_users(event):
 def google_connect():
   print 'current key ' + str(current_user.google_key)
   if not current_user.is_authenticated() or not current_user.google_key:
-    return redirect(url_for('login'))
+    return redirect(url_for('send_google'))
 
   credentials = OAuth2Credentials.from_json(current_user.google_key)
 
   if credentials is None or credentials.invalid == True:
-    return redirect(url_for('login'))
+    return redirect(url_for('send_google'))
 
   
   http = httplib2.Http()

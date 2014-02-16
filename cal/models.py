@@ -12,6 +12,7 @@ from oauth2client.file import Storage
 from oauth2client.client import OAuth2Credentials
 import httplib2
 
+# this can be sped up 100x with minimial effort but fuckit.
 def get_match(users, start, end, duration):
   events_list = [u.fb_events() + u.google_events() for u in users]
   #events_list = [events_a, events_b]
@@ -60,16 +61,14 @@ class User(db.Document, UserMixin):
   google_key = db.StringField()
   fb_key = db.StringField()
   created_events = db.ReferenceField('Event')
-  username = db.StringField()
   name = db.StringField()
   active = db.BooleanField(default=True)
   confirmed_at = db.DateTimeField()
   roles = db.ListField(db.ReferenceField('Role'), default=[])
   def to_json(self):
     return {
-        'id': self.id,
-        'fb_key': self.fb_key,
-        'google_key': self.google_key,
+        'id': str(self.id),
+        'name': self.name,
     }  
 
   def fb_events(self):
