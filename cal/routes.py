@@ -102,13 +102,15 @@ def all_events():
 def users():
   return jsonify(data=[x.to_json() for x in User.objects])
 
-@login_required
 @app.route('/events/add',  methods=['GET', 'POST'])
 def add_event():
   data = request.values
   from_time_range = parser.parse(data['from_time_range'])
   to_time_range = parser.parse(data['to_time_range'])
-  creator = current_user
+  if current_user.is_authenticated():
+    creator = current_user
+  else:
+    creator = User.objects.get(id=data['cookie'])
   event = Event(name=data['name'],from_time_range=from_time_range,
     to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
     creator=creator.id,threshold=data['threshold'])
