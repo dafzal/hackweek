@@ -16,3 +16,4 @@ class User(db.Model, UserMixin):
 
     def facebook_me(self):
       return self.social_auth.first().extra_data
+
