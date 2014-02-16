@@ -28,6 +28,7 @@ def dump_datetime(value):
         return None
     return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
 
+<<<<<<< HEAD
 class Role(db.Document, RoleMixin):
     name = db.StringField(max_length=80, unique=True)
     description = db.StringField(max_length=255)
@@ -43,6 +44,12 @@ class Connection(db.Document):
     profile_url = db.StringField()
     image_url = db.StringField()
     rank = db.IntField()
+=======
+class Response(db.Document):
+    responder = db.ReferenceField('User')
+    event = db.ReferenceField('Event')
+    response = db.BooleanField()
+>>>>>>> ac3246269ad1da3c2a5cecbfba510f604edc7e5d
 
 class Event(db.Document):
     name = db.StringField(default='New Event')
