@@ -37,12 +37,14 @@ sentry = Sentry(app)
 # app.config['SOCIAL_AUTH_FACEBOOK_SCOPE'] = ['email','user_about_me','user_events']
 # app.config['SOCIAL_AUTH_GOOGLE_SCOPE'] = ['calendar']
 app.config['SOCIAL_GOOGLE'] = {
-    'consumer_key': '610521713571.apps.googleusercontent.com',
-    'consumer_secret': 'FJgybwIs_wU8eautMC41PRE0'
+    'consumer_key': '610521713571-3v093rdrgspspv9gf5kcgsgj4s1adjqj.apps.googleusercontent.com',
+    'consumer_secret': 'mKH_3DZFWGdP_NrG168OFNMn',
+    'request_token_params': {'scope': 'profile https://www.googleapis.com/auth/calendar.readonly'},
 }
 app.config['SOCIAL_FACEBOOK'] = {
     'consumer_key': '1463976000492316',
-    'consumer_secret': 'b2cb45b169e0349eeacab0cf9fdaee3d'
+    'consumer_secret': 'b2cb45b169e0349eeacab0cf9fdaee3d',
+    'request_token_params': {'scope': 'email,user_about_me,user_events'},
 }
 
 login_manager = login.LoginManager()
@@ -75,7 +77,7 @@ def inject_user():
 def on_login_failed(sender, provider, oauth_response):
     print('Social Login Failed via %s; '
                      '&oauth_response=%s' % (provider.name, oauth_response))
-    fb = provider.name == 'Facebook'
+    fb = provider.name.lower() == 'Facebook'.lower()
     token = oauth_response['access_token']
     cv = get_connection_values_from_oauth_response(provider, oauth_response)
     print str(provider)
@@ -105,7 +107,7 @@ def on_login_failed(sender, provider, oauth_response):
         if fb:
           u = User(fb_id=cv['provider_user_id'], name=cv['full_name'], fb_key = token)
         else:
-          u = User(google_id=cv['provider_user_id'], name=cv['full_name'], fb_key = token)
+          u = User(google_id=cv['provider_user_id'], name=cv['display_name']['givenName'] + ' ' + cv['display_name']['familyName'], google_key = token)
         u.save()
         login_user(u)
         return

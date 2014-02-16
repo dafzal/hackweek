@@ -53,7 +53,7 @@ class Event(db.Document):
     from_time_range = db.DateTimeField()
     to_time_range = db.DateTimeField()
     location = db.StringField()
-    duration_minites = db.IntField()
+    duration_minutes = db.IntField()
     invitees = db.ListField(db.ReferenceField('User'))
     final_from_field = db.DateTimeField()
     suggested_from_time = db.DateTimeField()
