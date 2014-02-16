@@ -32,7 +32,7 @@
   </div>
 </div>
 
-<div class="dark-grey-bg" style='height:100%'>
+<div class="dark-grey-bg">
   <p><h3><font color="white"> Events invites </font></h3></p>
   <div class="container light-grey-bg" style='padding:20px'>
 
@@ -50,9 +50,19 @@
       <tr class="tr-line">
         <td>{{e['name']}}</td>
         <td>{{e['location']}}</td>
-        <td></td>
-        <td></td>
-        <td>{{e['status']}}</td>
+        <td>{{e['suggested_from_time'].split('T')[0]}}</td>
+        <td>{{e['suggested_from_time'].split('T')[1]}}</td>
+        {% if e['res'] == 'notfound' %}
+          <td>
+            <div class="btn-group">
+              <button event_id="{{e['id']}}" class="res btn btn-default">Yes</button>
+              <button event_id="{{e['id']}}" class="res btn btn-default">No</button>
+            </div>
+            <span class="hide"></span>
+          </td>
+        {% else %}
+          <td>{{e['res']}}</td>
+        {% endif %}
       </tr>  
       {% endfor %}
     </table>
@@ -73,8 +83,8 @@
       <tr class="tr-line">
         <td>{{e['name']}}</td>
         <td>{{e['location']}}</td>
-        <td></td>
-        <td></td>
+        <td>{{e['suggested_from_time'].split('T')[0]}}</td>
+        <td>{{e['suggested_from_time'].split('T')[1]}}</td>
         {% if e['status'] == 'started' %}
         <td>Pending</td>
         {% else %}
@@ -85,5 +95,27 @@
     </table>
   </div>  
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function(){
+  $('.res').click(function(e){
+    e.preventDefault();
+    opts = {
+      'event_id': $(e.target).attr('event_id'),
+      'response': $(e.target).text() == 'Yes'  
+    }
+    console.log(opts);
+    $.post('/events/respond_web', opts, function(data){
+      console.log(data);
+      $(e.target).parent().hide();
+      console.log($(e.target).parent().siblings('span'));
+      $(e.target).parent().siblings('span').html($(e.target).text());
+      $(e.target).parent().siblings('span').removeClass('hide');
+    });
+  });
+});
+</script>
 {% endblock %}
 

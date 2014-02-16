@@ -199,6 +199,7 @@ class Event(db.Document):
             'id': str(self.id),
             'name': self.name,
             'duration_minutes': self.duration_minutes,
+            'location': self.location,
             'status': self.status,
             'creator_id': str(self.creator.id),
             'invitees': [ invitee.to_json() for invitee in self.invitees],

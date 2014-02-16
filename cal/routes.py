@@ -87,7 +87,10 @@ def current_events():
 
 @app.route('/overview')
 def overview():
-  return render_template('list_events.html', events=get_events(user=current_user),
+  events = get_events(user=current_user)
+  events['created_events'] = reversed(events['created_events'])
+  events['invited_events'] = reversed(events['invited_events'])
+  return render_template('list_events.html', events=events,
     user_name=current_user.name)
 
 
@@ -108,6 +111,15 @@ def get_events(user, finalized_only=False):
     'created_events': [x.to_json() for x in created_events],
     'invited_events': [x.to_json() for x in invited_events],
   }
+  for event in results['invited_events']:
+    response = Response.objects(event=Event.objects().get(id=event['id']), responder=user.id)
+    if response is not None and len(response) > 0:
+      if response[0].response:
+        event['res'] = 'Yes'
+      else:
+        event['res'] = 'No'
+    else:
+      event['res'] = 'notfound'
   return results
 
 @app.route('/events')
@@ -169,6 +181,18 @@ def add_event():
 
   event.save()
   return 'OK'
+
+@login_required
+@app.route('/events/respond_web', methods=['POST'])
+def res():
+  data = request.values
+  event_id = data['event_id']
+  user_id = current_user.id
+  response = data['response']
+  r = Response(response=response, event=event_id, responder=user_id)
+  r.save()
+  return 'OK'
+
 
 @app.route('/events/respond/<event_id>')
 def respond(event_id):
