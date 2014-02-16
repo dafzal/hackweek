@@ -24,16 +24,16 @@
 {% block scripts %} 
 <script>
   $(document).ready(function() {
-      event_array = []
-      events = "{{events}}"
-      for (e in events) {
-        event_array.push({
-          title: e['name'],
-          start: e['final_from_time'],
-          allDay: false
-        })
-      }
-      console.log(event_array)
+      // event_array = []
+      // for (e in {{events|safe}}) {
+      //   console.log(e);
+      //   event_array.push({
+      //     title: e['title'],
+      //     start: e['start'],
+      //     allDay: false
+      //   })
+      // }
+      // console.log(event_array)
       $('#calendar').fullCalendar({
         header: {
           left: 'prev, title, next',
@@ -41,7 +41,7 @@
           right: 'year,month,basicWeek'
         },
         editable: false,
-        events: event_array
+        events: {{events|safe}}
       })
   });
 </script>

@@ -22,8 +22,14 @@ from cal.models import User,Event, Response
 @app.route('/')
 def main():
   if current_user.is_authenticated():
+    events = get_events(user=current_user, finalized_only=True)
+    results = []
+    for e in events:
+      entry = {'title': str(e.name), 'start': str(e.suggested_from_time), 'allDay': False}
+      if entry not in results:
+        results.append({'title': str(e.name), 'start': str(e.suggested_from_time), 'allDay': False})
     return render_template('dashboard.html', user_name=current_user.name,
-      events=get_events(current_user, finalized_only=True))
+      events=json.dumps(results))
   return render_template('home.html')
 
 @app.route('/home')
