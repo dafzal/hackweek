@@ -125,7 +125,8 @@ $(document).ready(function(){
     };
     console.log(opts)
     $.post('/events/add',opts,function(data){
-      console.log(data)
+      console.log(data);
+      window.location.href = "/";
     });
   });
 });
