@@ -70,11 +70,9 @@ def all_events():
   u = current_user
   created_events = Event.objects(creator=u.id)
   invited_events = Event.objects(invitees=u.id)
-  import ipdb
-  ipdb.set_trace()
   results = {
-    'created_events': ['a','b'],
-    'invited_events': [x.to_json() for x in invited_events.to_json()]
+    'created_events': [x.to_json() for x in created_events],
+    'invited_events': [x.to_json() for x in invited_events],
   }
   return jsonify(results)
 
