@@ -6,3 +6,4 @@ flask-security
 psycopg2
 facebook-sdk
 raven
+gunicorn
