@@ -26,7 +26,7 @@ def done():
 @login_required
 @app.route('/friends')
 def friends():
-  return jsonify(**current_user.get_friends()['data'])
+  return jsonify(current_user.get_friends())
 
 @app.route('/logout')
 def logout():

@@ -3,6 +3,7 @@ from cal import db
 import facebook
 from flask.ext.security import Security, MongoEngineUserDatastore, \
     UserMixin, RoleMixin, login_required
+import requests
 
 class User(db.Document, UserMixin):
   fb_id = db.StringField()
@@ -21,6 +22,36 @@ class User(db.Document, UserMixin):
         'fb_key': self.fb_key,
         'google_key': self.google_key,
     }  
+
+  def fb_events(self):
+    url = 'https://graph.facebook.com/me/events?access_token=%s'
+    ret = []
+    r = requests.get(url % self.fb_key).json()
+    print str(r)
+    ret = r['data']
+    next = r['paging']['next']
+    while next:
+      r = requests.get(next).json()
+      print str(r)
+      ret += r['data']
+      try:
+        next = r['paging']['next']
+      except:
+        next = None
+    return ret
+
+  def get_friends(self):
+    graph = facebook.GraphAPI(self.fb_id)
+    friends = graph.get_connections("me", "friends")
+    return friends['data']
+
+  def get_available_times(self):
+    times = []
+    # fb
+    graph = facebook.GraphAPI(self.fb_id)
+    profile = graph.get_object("me")
+    friends = graph.get_connections("me", "friends")
+    pass
 
 def dump_datetime(value):
     """Deserialize datetime object into string form for JSON processing."""
@@ -60,6 +91,9 @@ class Event(db.Document):
     status = db.StringField(default='started')
     creator = db.ReferenceField('User')
     threshold = db.IntField()
+
+    def get_suggested_time(self):
+      pass
 
     def to_json(self, is_creator=False):
         json = {
