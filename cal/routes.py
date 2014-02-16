@@ -17,7 +17,8 @@ from cal import social
 @app.route('/')
 def main():
   if current_user.is_authenticated():
-    return render_template('dashboard.html', user_name=current_user.name)
+    return render_template('dashboard.html', user_name=current_user.name,
+      events=get_events(current_user, finalized_only=True))
   return render_template('home.html')
 
 @login_required
@@ -52,13 +53,34 @@ def add_fakedata():
 @app.route('/events/<user_id>')
 def events(user_id):
   u = User.objects.get(id=user_id)
-  created_events = Event.objects(creator=u)
-  invited_events = Event.objects(invitees=u)
+  results = get_events(u)
+  return jsonify(results)
+
+@app.route('/overview')
+def overview():
+  return render_template('list_events.html', events=get_events(user=current_user),
+    user_name=current_user.name)
+
+
+def get_events(user, finalized_only=False):
+  created_events = Event.objects(creator=user.id)
+  invited_events = Event.objects(invitees=user.id)
+  if finalized_only:
+    finalized_events = []
+    for event in created_events:
+      if event.status == 'Finalized':
+        finalized_events.append(event)
+    for event in invited_events:
+      if event.status == 'Finalized':
+        finalized_events.append(event)
+    return finalized_events
+
   results = {
     'created_events': created_events.to_json(),
     'invited_events': invited_events.to_json()
   }
-  return jsonify(results)
+  return results
+
 
 @app.route('/events/add')
 def add_event():

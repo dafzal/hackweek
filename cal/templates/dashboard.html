@@ -17,7 +17,7 @@
     </div>
     <ul class="nav navbar-nav navbar-right">
       <li>
-        <a href="#">
+        <a href="/overview">
           <h4><span class="glyphicon glyphicon-user"></span> {{user_name}} </h4>
         </a>
       </li>
@@ -32,7 +32,7 @@
 
 <div class="jumbotron white-bg" style='height:100px'>
   <div class="container">
-    <h2 class="dark-grey">My Events</h2>  
+    <h2 class="dark-grey">Finalized Events</h2>  
   </div>
 </div>
 
@@ -43,6 +43,15 @@
 {% block extra_js %} 
 <script>
   $(document).ready(function() {
+      event_array = []
+      for (e in {{events}}) {
+        event_array.push({
+          title: e['name'],
+          start: e['final_from_time'],
+          allDay: false
+        })
+      }
+      console.log(event_array)
       $('#calendar').fullCalendar({
         header: {
           left: 'prev, title, next',
@@ -50,19 +59,7 @@
           right: 'year,month,basicWeek'
         },
         editable: false,
-
-           events: [
-        {
-            title  : 'Dinner',
-            start  : '2014-02-20 05:20:00',
-            allDay : false // will make the time show
-        },
-        {
-            title  : 'Tennis',
-            start  : '2014-02-19 12:30:00',
-            allDay : false // will make the time show
-        }
-    ]
+        events: event_array
       })
   });
 </script>
