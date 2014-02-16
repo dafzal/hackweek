@@ -13,13 +13,18 @@ import httplib2
 import datetime, time
 from cal.models import User,Event
 from cal import social
-
+from dateutil import parser
 @app.route('/')
 def main():
   if current_user.is_authenticated():
     return render_template('dashboard.html', user_name=current_user.name,
       events=get_events(current_user, finalized_only=True))
   return render_template('home.html')
+
+@app.route('/home')
+def home():
+  return render_template('home.html')
+
 
 @login_required
 @app.route('/done/')
@@ -29,7 +34,7 @@ def done():
 @login_required
 @app.route('/friends')
 def friends():
-  return jsonify(**current_user.get_friends()['data'])
+  return jsonify(current_user.get_friends())
 
 @app.route('/logout')
 def logout():
@@ -76,23 +81,39 @@ def get_events(user, finalized_only=False):
     return finalized_events
 
   results = {
-    'created_events': created_events.to_json(),
-    'invited_events': invited_events.to_json()
+    'created_events': [x.to_json() for x in created_events],
+    'invited_events': [x.to_json() for x in invited_events],
+  }
+  return jsonify(results)
+
+@app.route('/events')
+def all_events():
+  u = current_user
+  created_events = Event.objects(creator=u.id)
+  invited_events = Event.objects(invitees=u.id)
+  results = {
+    'created_events': [x.to_json() for x in created_events],
+    'invited_events': [x.to_json() for x in invited_events],
   }
   return results
 
 
-@app.route('/events/add')
+@app.route('/users')
+def users():
+  return jsonify(data=[x.to_json() for x in User.objects])
+
+@login_required
+@app.route('/events/add',  methods=['GET', 'POST'])
 def add_event():
-  data = request.POST
-  from_time_range = time.strptime(data['from_time_range'], "%d %b %y %H:%M")
-  to_time_range = time.strptime(data['to_time_range'], "%d %b %y %H:%M") 
-  creator = User.objects.get(id=data['user_id'])
+  data = request.values
+  from_time_range = parser.parse(data['from_time_range'])
+  to_time_range = parser.parse(data['to_time_range'])
+  creator = current_user
   event = Event(name=data['name'],from_time_range=from_time_range,
     to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
-    creator=creator,threshold=threshold)
-  for invitee_id in data['invitees']:
-    u = User.objects.get(id=invitee_id)
+    creator=creator.id,threshold=data['threshold'])
+  for invitee_name in data.getlist('invitees'):
+    u = User.objects.get(name__icontains=invitee_name)
     event.invitees.append(u)
   event.save()
   return 'OK'
@@ -118,15 +139,16 @@ def notify_users(event):
   # for invitee in event.invitees:
   pass
 
-@app.route('/google_connect')
+@app.route('/google_connect', methods=['GET', 'POST'])
 def google_connect():
   print 'current key ' + str(current_user.google_key)
-  if not current_user.google_key:
-    return redirect(url_for('login'))
+  if not current_user.is_authenticated() or not current_user.google_key:
+    return redirect(url_for('send_google'))
+
   credentials = OAuth2Credentials.from_json(current_user.google_key)
 
   if credentials is None or credentials.invalid == True:
-    return redirect(url_for('login'))
+    return redirect(url_for('send_google'))
 
   
   http = httplib2.Http()
@@ -147,11 +169,11 @@ def profile():
 @app.route('/test')
 def test():
   if not current_user.google_key:
-    return redirect(url_for('login'))
+    return redirect(url_for('send_google'))
   credentials = OAuth2Credentials.from_json(current_user.google_key)
 
   if credentials is None or credentials.invalid == True:
-      return redirect(url_for('login'))
+      return redirect(url_for('send_google'))
 
   http = httplib2.Http()
   http = credentials.authorize(http)
@@ -174,8 +196,8 @@ def test():
 CLIENT_ID = '610521713571-3v093rdrgspspv9gf5kcgsgj4s1adjqj.apps.googleusercontent.com'
 CLIENT_SECRET = 'mKH_3DZFWGdP_NrG168OFNMn'
 
-@app.route('/login')
-def login():
+@app.route('/send_google')
+def send_google():
   flow = OAuth2WebServerFlow(client_id=CLIENT_ID,
     client_secret=CLIENT_SECRET,
     scope='https://www.googleapis.com/auth/calendar',
@@ -205,4 +227,4 @@ def oauth2callback():
   current_user.save()
   #save
 
-  return redirect(url_for('done'))
+  return redirect(url_for('home'))
