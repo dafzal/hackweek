@@ -1,6 +1,7 @@
 import requests
 def send_message(from_mail='foo@bar.com', to=None, subject=None, text=None, 
-                        html=None, cc=None, bcc=None, ):
+                        html=None, cc=None, bcc=None ):
+  print 'sending message to ' + str(to) + ' html ' + html
   if type(to) == type([]):
     to = [to]
   data = {}
