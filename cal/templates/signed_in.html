@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block extra_css %}
+{% endblock %}
+{% block navbar %}
+<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><h4>Let's<span class="orange">Meet</span></h4></a>
+    </div>
+    <ul class="nav navbar-nav navbar-right">
+      <li>
+        <a href="/events/create">
+          <h4><span class="glyphicon glyphicon-plus"></span> Create Event </h4>
+        </a>
+      </li>
+      <li>
+        <a href="/overview">
+          <h4><span class="glyphicon glyphicon-user"></span> {{user_name}} </h4>
+        </a>
+      </li>
+      <li><a href="/logout"><h4>Sign out</h4></a></li>
+    </ul>
+</nav>
+
+{% endblock %}
+
+
+
+{% block extra_js %} 
+<script>
+  $(document).ready(function() {
+    $('#popover-trigger').popover({ 
+      html : true,
+      content: function() {
+        return $("#popover-content").html();
+      }
+    });
+  });
+</script>
+{% endblock %}
+{% block footage %}
+<div class="footer">
+  <nav class="navbar navbar-inverse" role="navigation">
+    <div class="container">
+      <ul class="nav navbar-nav">
+        <li><a href="#">About us</a></li>
+        <li><a href="#">Blog</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">@Let's Meet 2014</a></li>
+      </ul>
+    </div>
+  </nav>
+</div>
+{% endblock %}

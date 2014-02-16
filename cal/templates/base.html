@@ -4,7 +4,8 @@
     <title>Let's meet</title>
     <link href='{{url_for('static', filename="bootstrap/css/bootstrap.min.css")}}' rel="stylesheet" media="screen">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src='{{url_for('static',filename="bootstrap/js/bootstrap.min.js")}}'></script>
+    <script src='{{url_for('static',filename="jquery.multi-select.js")}}'></script>
+    <link href='{{url_for('static', filename="multi-select.css")}}' rel="stylesheet" media="screen">
     <style>
       .orange {
         color: rgb(251,169,25);
@@ -19,12 +20,28 @@
       body {
         overflow-y: scroll;
         overflow-x: hidden;
-        padding-top: 50px;
+        padding-top: 70px;
       }
+        * {
+  margin: 0;
+  }
+  html, body {
+    height: 100%;
+  }
+  .wrapper {
+    min-height: 100%;
+    height: auto !important;
+    height: 100%;
+    margin: 0 auto -50px; /* the bottom margin is the negative value of the footer's height */
+  }
+  .footer, .push {
+    height: 50; /* .push must be the same height as .footer */
+  }
     </style>
     {% block extra_css %} {% endblock %}
   </head>
   <body>
+    {% block navbar %}{% endblock %}
     {% block content %}{% endblock %}
     {% block scripts %}{% endblock %}
     <form method="post" action="" id="disconnect-form"></form>
@@ -39,5 +56,6 @@
       });
     </script>
     {% block extra_js %} {% endblock %}
+    {% block footage %}{% endblock %}
   </body>
 </html>

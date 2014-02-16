@@ -14,6 +14,7 @@ import datetime, time
 from cal.models import User,Event
 from cal import social
 from dateutil import parser
+import json
 @app.route('/')
 def main():
   if current_user.is_authenticated():
@@ -84,7 +85,7 @@ def get_events(user, finalized_only=False):
     'created_events': [x.to_json() for x in created_events],
     'invited_events': [x.to_json() for x in invited_events],
   }
-  return jsonify(results)
+  return results
 
 @app.route('/events')
 def all_events():
@@ -97,10 +98,16 @@ def all_events():
   }
   return results
 
-
 @app.route('/users')
 def users():
   return jsonify(data=[x.to_json() for x in User.objects])
+
+@app.route('/usernames')
+def usernames():
+  dic_array = []
+  for x in User.objects:
+    dic_array.append({'name':x.name})
+  return json.dumps(dic_array)
 
 @login_required
 @app.route('/events/add',  methods=['GET', 'POST'])
@@ -133,6 +140,10 @@ def respond():
     event.save()
     notify_users(event)
   return 'OK'
+
+@app.route('/events/create')
+def create_event():
+  return render_template('event_creation.html',user_name=current_user.name,user_list=User.objects.all())
 
 # send out emails/notifications to users
 def notify_users(event):
