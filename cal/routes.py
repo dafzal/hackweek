@@ -125,6 +125,8 @@ def users():
 def add_event():
   data = request.values
   print str(data)
+  import ipdb
+  ipdb.set_trace()
   from_time_range = parser.parse(data['from_time_range'])
   to_time_range = parser.parse(data['to_time_range'])
   if current_user.is_authenticated():
