@@ -20,6 +20,11 @@ def main():
     return render_template('dashboard.html', user_name=current_user.name)
   return render_template('home.html')
 
+@app.route('/home')
+def home():
+  return render_template('home.html')
+
+
 @login_required
 @app.route('/done/')
 def done():
@@ -96,11 +101,12 @@ def notify_users(event):
   # for invitee in event.invitees:
   pass
 
-@app.route('/google_connect')
+@app.route('/google_connect', methods=['GET', 'POST'])
 def google_connect():
   print 'current key ' + str(current_user.google_key)
-  if not current_user.google_key:
+  if not current_user.is_authenticated() or not current_user.google_key:
     return redirect(url_for('login'))
+
   credentials = OAuth2Credentials.from_json(current_user.google_key)
 
   if credentials is None or credentials.invalid == True:
@@ -125,11 +131,11 @@ def profile():
 @app.route('/test')
 def test():
   if not current_user.google_key:
-    return redirect(url_for('login'))
+    return redirect(url_for('send_google'))
   credentials = OAuth2Credentials.from_json(current_user.google_key)
 
   if credentials is None or credentials.invalid == True:
-      return redirect(url_for('login'))
+      return redirect(url_for('send_google'))
 
   http = httplib2.Http()
   http = credentials.authorize(http)
@@ -152,8 +158,8 @@ def test():
 CLIENT_ID = '610521713571-3v093rdrgspspv9gf5kcgsgj4s1adjqj.apps.googleusercontent.com'
 CLIENT_SECRET = 'mKH_3DZFWGdP_NrG168OFNMn'
 
-@app.route('/login')
-def login():
+@app.route('/send_google')
+def send_google():
   flow = OAuth2WebServerFlow(client_id=CLIENT_ID,
     client_secret=CLIENT_SECRET,
     scope='https://www.googleapis.com/auth/calendar',
@@ -183,4 +189,4 @@ def oauth2callback():
   current_user.save()
   #save
 
-  return redirect(url_for('done'))
+  return redirect(url_for('home'))

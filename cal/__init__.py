@@ -8,6 +8,7 @@ from flask.ext.social import Social,     login_failed, login_completed
 from flask.ext.social.utils import get_connection_values_from_oauth_response
 from flask.ext.login import login_user
 # ... create the app ...
+from flask.ext.login import user_logged_in
 
 
 app = Flask(__name__)
@@ -61,6 +62,7 @@ from cal.models import User
 @login_manager.user_loader
 def load_user(userid):
     try:
+      print 'loading user ' + userid
       return User.objects.get(id=userid)
     except:
         pass

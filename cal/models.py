@@ -6,11 +6,18 @@ from flask.ext.security import Security, MongoEngineUserDatastore, \
 import requests
 from dateutil import parser
 import datetime
+from oauth2client.client import OAuth2WebServerFlow
+from apiclient.discovery import build_from_document, build
+from oauth2client.file import Storage
+from oauth2client.client import OAuth2Credentials
+import httplib2
 
 def get_match(users, start, end, duration):
-  events_list = [u.fb_events() for u in users]
+  events_list = [u.fb_events() + u.google_events() for u in users]
+  #events_list = [events_a, events_b]
+  print 'events list is ' + str(events_list)
   while start < end:
-    if all(is_available(events, start) for events in events_list):
+    if all(is_available(events, start, duration) for events in events_list):
       return start
     start += datetime.timedelta(minutes=30)
 
@@ -18,8 +25,11 @@ def is_available(events, time, duration):
   # duration is ignored
   print 'checking ' + str(time) + ' in ' + str(events)
   for e in events:
-    if e['start_time'] < time and e['end_time'] > time:
+    if e['start_time'] <= time and e['end_time'] >= time:
       print 'miss ' + str(e)
+      return False
+    if e['start_time'] > time and e['start_time'] <= time+duration:
+      print 'miss after start' + str(e)
       return False
   return True
 
@@ -79,13 +89,49 @@ class User(db.Document, UserMixin):
         next = None
 
     for r in ret:
+      if 'end_time' not in r:
+        if 'T' not in r['start_time']:
+          r['end_time'] = r['start_time'] + 'T23:59:59-0800'
+        else:
+          r['end_time'] = r['start_time']
       if 'T' not in r['start_time']:
-        r['end_time'] = r['start_time'] + 'T23:59:59-0800'
-        r['end_time'] = parser.parse(r['end_time']).replace(tzinfo=None)
         r['start_time'] += 'T00:00:00-0800'
-        r['start_time'] = parse.parse(r['start_time']).replace(tzinfo=None)
-    ret = [x for x in ret if x['rsvp_status'] == 'available']
+      r['end_time'] = parser.parse(r['end_time']).replace(tzinfo=None)
+      r['start_time'] = parser.parse(r['start_time']).replace(tzinfo=None)
+    ret = [x for x in ret if x['rsvp_status'] == 'available' or x['rsvp_status'] == 'attending']
     return sorted(ret, key=lambda x: x['start_time'])
+
+  def google_events(self):
+    if not self.google_key:
+      return []
+    credentials = OAuth2Credentials.from_json(self.google_key)
+    http = httplib2.Http()
+    http = credentials.authorize(http)
+    service = build("calendar", "v3", http=http)
+    calendar_list = service.calendarList().list().execute()
+    ids = [x['id'] for x in calendar_list['items']]
+    all_events = []
+    for calendar_id in ids:
+      page_token = None
+      while True:
+        events = service.events().list(calendarId='primary', pageToken=page_token).execute()
+        all_events += events['items']
+        page_token = events.get('nextPageToken')
+        if not page_token:
+          break
+    print str(all_events)
+    for e in all_events:
+      if 'date' in e['start']:
+        e['start_time'] = parser.parse(e['start']['date']).replace(tzinfo=None)
+      else:
+        e['start_time'] = parser.parse(e['start']['dateTime']).replace(tzinfo=None)
+      if 'date' in e['end']:
+        e['end_time'] = parser.parse(e['end']['date']).replace(tzinfo=None)
+      else:
+        e['end_time'] = parser.parse(e['end']['dateTime']).replace(tzinfo=None)
+
+    all_events = [x for x in all_events if x['start_time'] > datetime.datetime(month=2, day=10, year=2014)]
+    return all_events
 
 
   def get_friends(self):
