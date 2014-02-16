@@ -15,6 +15,15 @@ class User(db.Model, UserMixin):
   def is_active(self):
     return self.active
 
+  def facebook_token(self):
+    token = self.social_auth.first().extra_data['access_token']
+    return token
+
+  def get_friends(self):
+    token = self.facebook_token()
+    graph = facebook.GraphAPI(token)
+    return graph.get_object('me/friends')
+    
   def facebook_me(self):
     token = self.social_auth.first().extra_data['access_token']
     graph = facebook.GraphAPI(token)
