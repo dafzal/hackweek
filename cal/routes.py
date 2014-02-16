@@ -11,7 +11,7 @@ from oauth2client.file import Storage
 from oauth2client.client import OAuth2Credentials
 import httplib2
 import datetime, time
-from cal.models import User,Event
+from cal.models import User,Event, Response
 from cal import social
 from dateutil import parser
 @app.route('/')
@@ -57,10 +57,28 @@ def add_fakedata():
 
 @app.route('/events/<user_id>')
 def events(user_id):
-  u = User.objects.get(id=user_id)
-  results = get_events(u)
+  finalized_only = False
+  user = User.objects.get(id=user_id)
+  created_events = Event.objects(creator=user.id)
+  invited_events = Event.objects(invitees=user.id)
+
+  results = {
+    'created_events': [x.to_json() for x in created_events],
+    'invited_events': [x.to_json() for x in invited_events],
+  }
   return jsonify(results)
 
+@app.route('/events')
+def current_events():
+  user = current_user
+  created_events = Event.objects(creator=user.id)
+  invited_events = Event.objects(invitees=user.id)
+
+  results = {
+    'created_events': [x.to_json() for x in created_events],
+    'invited_events': [x.to_json() for x in invited_events],
+  }
+  return jsonify(results)
 
 @app.route('/overview')
 def overview():
@@ -122,19 +140,20 @@ def add_event():
   event.save()
   return 'OK'
 
-@app.route('/events/respond')
-def respond():
+@app.route('/events/respond/<event_id>')
+def respond(event_id):
+  print 'hi'
   data = request.values
-  response = data['response']
-  event = Event.objects.get(id=data['event_id'])
+  user_response = data.get('user_response','user response')
+  event = Event.objects.get(id=event_id)
   if current_user.is_authenticated():
-    responder = User.objects.get(id=data['responder'])
+    responder = current_user
   else:
     responder = User.objects.get(id=data['cookie'])
-  r = Response(response=response, event=event.id, responder=responder.id)
+  r = Response(response=user_response, event=event.id, responder=responder.id)
   r.save()
   num_response = Response.objects(event=event).count()
-  if num_response >= event.threshold:
+  if num_response >= int(event.threshold):
     event.status = 'Finalized'
     event.final_from_field = event.suggested_from_time
     event.save()
