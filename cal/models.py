@@ -186,7 +186,7 @@ class Event(db.Document):
     threshold = db.IntField()
 
     def get_suggested_time(self):
-      pass
+      return get_match(invitees, from_time_range, to_time_range, datetime.timedelta(seconds=duration_minutes*60))
 
     def to_json(self, is_creator=False):
         json = {

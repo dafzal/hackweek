@@ -13,7 +13,7 @@ import httplib2
 import datetime, time
 from cal.models import User,Event
 from cal import social
-
+from dateutil import parser
 @app.route('/')
 def main():
   if current_user.is_authenticated():
@@ -60,25 +60,40 @@ def events(user_id):
   created_events = Event.objects(creator=u)
   invited_events = Event.objects(invitees=u)
   results = {
-    'created_events': created_events.to_json(),
-    'invited_events': invited_events.to_json()
+    'created_events': [x.to_json() for x in created_events],
+    'invited_events': [x.to_json() for x in invited_events],
+  }
+  return jsonify(**results)
+
+@app.route('/events')
+def all_events():
+  u = current_user
+  created_events = Event.objects(creator=u.id)
+  invited_events = Event.objects(invitees=u.id)
+  import ipdb
+  ipdb.set_trace()
+  results = {
+    'created_events': ['a','b'],
+    'invited_events': [x.to_json() for x in invited_events.to_json()]
   }
   return jsonify(results)
 
 @app.route('/users')
 def users():
   return jsonify(data=[x.to_json() for x in User.objects])
-@app.route('/events/add')
+
+@login_required
+@app.route('/events/add',  methods=['GET', 'POST'])
 def add_event():
-  data = request.POST
-  from_time_range = time.strptime(data['from_time_range'], "%d %b %y %H:%M")
-  to_time_range = time.strptime(data['to_time_range'], "%d %b %y %H:%M") 
-  creator = User.objects.get(id=data['user_id'])
+  data = request.values
+  from_time_range = parser.parse(data['from_time_range'])
+  to_time_range = parser.parse(data['to_time_range'])
+  creator = current_user
   event = Event(name=data['name'],from_time_range=from_time_range,
     to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
-    creator=creator,threshold=threshold)
-  for invitee_id in data['invitees']:
-    u = User.objects.get(id=invitee_id)
+    creator=creator.id,threshold=data['threshold'])
+  for invitee_name in data.getlist('invitees'):
+    u = User.objects.get(name__icontains=invitee_name)
     event.invitees.append(u)
   event.save()
   return 'OK'
