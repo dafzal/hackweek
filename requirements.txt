@@ -16,3 +16,4 @@ flask-social
 python-dateutil
 evernote
 flask-sqlalchemy #for memsql
+sendgrid

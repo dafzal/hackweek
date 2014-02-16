@@ -1,4 +1,4 @@
-from flask import render_template, redirect, jsonify
+from flask import render_template, redirect, jsonify, json
 from flask.ext.login import login_required, logout_user, current_user
 from flask import render_template, redirect, session, url_for, request
 from flask.ext.login import login_required, logout_user
@@ -133,11 +133,13 @@ def add_event():
   note.title = 'Event ' + str(request.values.get('name'))
   note.content = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
   content = 'Selected date: ' + data.get('from_time_range', datetime.datetime.now().isoformat()) + '<br/>'
+  invitees = []
   for i in data.getlist('invitees'):
+    invitees += i.split(',')
+  for i in invitees:
     content += i +  ' - Waiting for response' + '<br />'
   note.content += '<en-note>%s</en-note>' % content
   createdNote = store.createNote(note)
-  return createdNote.guid
 
   print str(data)
   from_time_range = parser.parse(data['from_time_range'])
@@ -149,7 +151,7 @@ def add_event():
   event = Event(name=data['name'],from_time_range=from_time_range,
     to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
     creator=creator.id,threshold=data['threshold'], note_guild=createdNote.guid)
-  for invitee_name in data.getlist('invitees'):
+  for invitee_name in invitees:
     u = User.objects.get(name__icontains=invitee_name)
     event.invitees.append(u)
   
@@ -175,7 +177,7 @@ def respond(event_id):
   else:
     responder = User.objects.get(id=data['cookie'])
   try:
-    r = Response.objects.get(db.Q(event=event.id) & db.Q(responder.responder.id))
+    r = Response.objects.get(db.Q(event=event.id) & db.Q(responder=responder.id))
   except:
     r = Response(response=user_response, event=event.id, responder=responder.id)
   r.response = user_response
@@ -193,7 +195,7 @@ def respond(event_id):
 
   for i in event.invitees:
     try:
-      r = Response.objects.get(db.Q(event=event.id) & db.Q(i.id))
+      r = Response.objects.get(db.Q(event=event.id) & db.Q(responder=i.id))
       content += i.name +  ' - Responded ' + str(r.response) + '<br />'
     except Exception as e:
       print str(e)
@@ -296,3 +298,11 @@ def oauth2callback():
   #save
 
   return redirect(url_for('home'))
+
+import requests
+
+def mail(to, subject):
+  url = 'https://api.sendgrid.com/api/mail.send.json'
+  data = {'api_user':'iotasquared', 'api_key': 'Calhack1', 'to[]':to, 'subject':subject}
+  r = requests.post(url, data=json.dumps(data), headers = {'Content-type': 'application/json', 'Accept': 'text/plain'})
+  print r.json()
