@@ -9,4 +9,6 @@ psycopg2
 facebook-sdk
 raven
 gunicorn
-flask-mongoengine
+flask-mongoengine==0.7.0
+mongoengine==0.8.7
+pymongo==2.6.3
