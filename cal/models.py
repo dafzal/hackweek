@@ -199,7 +199,10 @@ class Event(db.Document):
         print subject
         yes = url_for('respond', event_id=self.id, user_response=True, _external=True, cookie=i.id)
         no = url_for('respond', event_id=self.id, user_response=False, _external=True, cookie=i.id)
+        print 'before send_message'
         mail.send_message(to=i.email, html=render_template('email.html', e=self, u=i, yes=yes, no=no), subject=subject)
+        print 'after send_message'
+      print 'done'
 
     def get_suggested_time(self):
       return get_match(invitees, from_time_range, to_time_range, datetime.timedelta(seconds=duration_minutes*60))
