@@ -1,4 +1,5 @@
 from flask.ext.login import UserMixin
+from flask import render_template, redirect, session, url_for, request
 from cal import db
 import facebook
 from flask.ext.security import Security, MongoEngineUserDatastore, \
@@ -11,6 +12,7 @@ from apiclient.discovery import build_from_document, build
 from oauth2client.file import Storage
 from oauth2client.client import OAuth2Credentials
 import httplib2
+from cal import mail
 
 # this can be sped up 100x with minimial effort but fuckit.
 def get_match(users, start, end, duration):
@@ -65,6 +67,7 @@ class User(db.Document, UserMixin):
   active = db.BooleanField(default=True)
   confirmed_at = db.DateTimeField()
   roles = db.ListField(db.ReferenceField('Role'), default=[])
+  email = db.StringField()
   def to_json(self):
     return {
         'id': str(self.id),
@@ -188,6 +191,13 @@ class Event(db.Document):
     threshold = db.IntField()
     note_guid = db.StringField(default='b392ca98-2179-47f8-9a75-9f07f5b17963')
     days = db.StringField() #smtwrfy
+
+    def send_invites(self):
+      for i in self.invitees:
+        subject = 'New Invite for ' + i.name + ' from ' + self.creator.name
+        yes = url_for('respond', event_id=self.id, user_response=True, _external=True, cookie=i.id)
+        no = url_for('respond', event_id=self.id, user_response=False, _external=True, cookie=i.id)
+        mail.send_message(to=i.email, html=render_template('email.html', e=self, u=i, yes=yes, no=no), subject=subject)
 
     def get_suggested_time(self):
       return get_match(invitees, from_time_range, to_time_range, datetime.timedelta(seconds=duration_minutes*60))
