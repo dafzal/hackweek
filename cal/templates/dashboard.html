@@ -26,7 +26,7 @@
           <h4><span class="glyphicon glyphicon-plus"></span> Create Event </h4>
         </a>
       </li>
-      <li><a href="#"><h4>Sign out</h4></a></li>
+      <li><a href="/logout"><h4>Sign out</h4></a></li>
     </ul>
 </nav>
 
@@ -44,7 +44,25 @@
 <script>
   $(document).ready(function() {
       $('#calendar').fullCalendar({
-          // put your options and callbacks here
+        header: {
+          left: 'prev, title, next',
+          center: '',
+          right: 'year,month,basicWeek'
+        },
+        editable: false,
+
+           events: [
+        {
+            title  : 'Dinner',
+            start  : '2014-02-20 05:20:00',
+            allDay : false // will make the time show
+        },
+        {
+            title  : 'Tennis',
+            start  : '2014-02-19 12:30:00',
+            allDay : false // will make the time show
+        }
+    ]
       })
   });
 </script>
