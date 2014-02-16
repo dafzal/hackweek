@@ -132,7 +132,6 @@ def usernames():
     dic_array.append({'name':x.name})
   return json.dumps(dic_array)
 
-@login_required
 @app.route('/events/add',  methods=['GET', 'POST'])
 def add_event():
   data = request.values
