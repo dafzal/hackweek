@@ -142,7 +142,7 @@ def add_event():
   content = 'Selected date: ' + data.get('from_time_range', datetime.datetime.now().isoformat()) + '<br/>'
   invitees = []
   for i in data.getlist('invitees'):
-    invitees += i.split(',')
+    invitees += [x.strip() for x in i.split(',')]
   for i in invitees:
     content += i +  ' - Waiting for response' + '<br />'
   note.content += '<en-note>%s</en-note>' % content
@@ -161,7 +161,9 @@ def add_event():
     to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
     creator=creator.id,threshold=data['threshold'], note_guild=createdNote.guid, days=''.join(days))
   for invitee_name in invitees:
-    u = User.objects.get(name__icontains=invitee_name)
+    if not invitee_name.strip():
+      continue
+    u = User.objects.get(name__icontains=invitee_name.strip())
     event.invitees.append(u)
   
   #evernote stuff
