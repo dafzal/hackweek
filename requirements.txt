@@ -12,3 +12,4 @@ gunicorn
 flask-mongoengine==0.7.0
 mongoengine==0.8.7
 pymongo==2.6.3
+flask-social

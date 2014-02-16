@@ -21,6 +21,4 @@ def syncdb():
     print 'done'
 
 if __name__ == '__main__':
-  app.config['DEBUG'] = True
-  app.debug = True
   manager.run()

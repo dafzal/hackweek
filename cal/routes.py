@@ -12,6 +12,7 @@ from oauth2client.client import OAuth2Credentials
 import httplib2
 import datetime
 from cal.models import User,Event
+from cal import social
 
 @app.route('/')
 def main():
@@ -76,6 +77,13 @@ def google_connect():
   print calendar_list
   return redirect('/')
 
+@app.route('/profile2')
+def profile():
+    return render_template(
+        'profile.html',
+        content='Profile Page',
+        facebook_conn=social.facebook.get_connection())
+
 @app.route('/test')
 def test():
   if not current_user.google_key:
@@ -134,9 +142,7 @@ def oauth2callback():
 
   current_user.google_key = credentials.to_json()
   print 'google key set to ' + current_user.google_key
-  db.session.flush()
-  import ipdb
-  ipdb.set_trace()
+  current_user.save()
   #save
 
   return redirect(url_for('done'))

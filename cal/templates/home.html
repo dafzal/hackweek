@@ -1,12 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+{% macro social_login(provider_id, display_name) %}
+  <form action="{{ url_for('social.login', provider_id=provider_id) }}" method="POST">
+    <input type="submit" value="Login with {{ display_name }}" />
+  </form>
+{% endmacro %}
+
+
+{{ social_login('facebook', 'Facebook' )}}
+{{ social_login('google', 'Google' )}}
+
+
+
+
 <a href="">Facebook OAuth2</a> <br />
 <a href="/google_connect">Google Connect</a> <br />
 <a href="/add_fakedata">Add fake data</a>
 
-<h1>{% if user.is_authenticated()%}{{user.facebook_me()}}{% endif %}</h1>
-<h3>{% if user.is_authenticated()%}{{user.google_key}}{% endif %}</h3>
+<h1>{% if user.is_authenticated()%}fb key: {{user.fb_key}}{% endif %}</h1>
+<h3>{% if user.is_authenticated()%}google key: {{user.google_key}}{% endif %}</h3>
 {% endblock %}
 
 {% block scripts %}
