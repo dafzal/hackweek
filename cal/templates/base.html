@@ -3,6 +3,23 @@
   <head>
     <title>Let's meet</title>
     <link href='{{url_for('static', filename="bootstrap/css/bootstrap.min.css")}}' rel="stylesheet" media="screen">
+    <style>
+      .orange {
+        color: rgb(251,169,25);
+        font-size: 24px;
+      }
+      .white-bg {
+        background-color: white;
+      }
+      .dark-grey {
+        color: rgb(102,102,102);
+      }
+      body {
+        overflow-y: scroll;
+        overflow-x: hidden;
+        padding-top: 50px;
+      }
+    </style>
     {% block extra_css %} {% endblock %}
   </head>
   <body>

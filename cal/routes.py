@@ -16,6 +16,8 @@ from cal import social
 
 @app.route('/')
 def main():
+  if current_user.is_authenticated():
+    return render_template('dashboard.html', user_name=current_user.name)
   return render_template('home.html')
 
 @login_required
