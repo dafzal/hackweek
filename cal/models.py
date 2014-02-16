@@ -187,6 +187,7 @@ class Event(db.Document):
     creator = db.ReferenceField('User')
     threshold = db.IntField()
     note_guid = db.StringField(default='b392ca98-2179-47f8-9a75-9f07f5b17963')
+    days = db.StringField() #smtwrfy
 
     def get_suggested_time(self):
       return get_match(invitees, from_time_range, to_time_range, datetime.timedelta(seconds=duration_minutes*60))
@@ -208,7 +209,8 @@ class Event(db.Document):
             'status': self.status,
             'threshold': self.threshold,
             'creator': self.creator.to_json(),
-            'responses': [x.to_json() for x in self.get_responses()]
+            'responses': [x.to_json() for x in self.get_responses()],
+            'days': self.days,
         }
         # if self.status == 'finalized':
         #     json = json.update({

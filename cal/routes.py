@@ -142,6 +142,8 @@ def add_event():
   createdNote = store.createNote(note)
 
   print str(data)
+  days = data.get('days','mtw')
+
   from_time_range = parser.parse(data['from_time_range'])
   to_time_range = parser.parse(data['to_time_range'])
   if current_user.is_authenticated():
@@ -150,7 +152,7 @@ def add_event():
     creator = User.objects.get(id=data['cookie'])
   event = Event(name=data['name'],from_time_range=from_time_range,
     to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
-    creator=creator.id,threshold=data['threshold'], note_guild=createdNote.guid)
+    creator=creator.id,threshold=data['threshold'], note_guild=createdNote.guid, days=''.join(days))
   for invitee_name in invitees:
     u = User.objects.get(name__icontains=invitee_name)
     event.invitees.append(u)
