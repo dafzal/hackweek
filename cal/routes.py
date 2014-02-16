@@ -11,9 +11,13 @@ from oauth2client.file import Storage
 from oauth2client.client import OAuth2Credentials
 import httplib2
 import datetime, time
-from cal.models import User,Event, Response
 from cal import social
 from dateutil import parser
+from evernote.edam.type.ttypes import *
+from evernote.api.client import *
+from evernote.edam.notestore.ttypes import *
+from cal.models import User,Event, Response
+
 @app.route('/')
 def main():
   if current_user.is_authenticated():
@@ -119,14 +123,23 @@ def all_events():
 
 @app.route('/users')
 def users():
-  return jsonify(data=[x.to_json() for x in User.objects])
+  return jsonify(data=[x.to_json() for x in User.objects.all()])
 
 @app.route('/events/add',  methods=['GET', 'POST'])
 def add_event():
   data = request.values
+  store = EvernoteClient(token='S=s1:U=8df7b:E=14b91fcbdb9:C=1443a4b91bb:P=1cd:A=en-devtoken:V=2:H=58cee1b9b995670db8f66230ec99b5e1').get_note_store()
+  note = Note()
+  note.title = 'Event ' + str(request.values.get('name'))
+  note.content = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
+  content = 'Selected date: ' + data.get('from_time_range', datetime.datetime.now().isoformat()) + '<br/>'
+  for i in data.getlist('invitees'):
+    content += i +  ' - Waiting for response' + '<br />'
+  note.content += '<en-note>%s</en-note>' % content
+  createdNote = store.createNote(note)
+  return createdNote.guid
+
   print str(data)
-  import ipdb
-  ipdb.set_trace()
   from_time_range = parser.parse(data['from_time_range'])
   to_time_range = parser.parse(data['to_time_range'])
   if current_user.is_authenticated():
@@ -135,10 +148,13 @@ def add_event():
     creator = User.objects.get(id=data['cookie'])
   event = Event(name=data['name'],from_time_range=from_time_range,
     to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
-    creator=creator.id,threshold=data['threshold'])
+    creator=creator.id,threshold=data['threshold'], note_guild=createdNote.guid)
   for invitee_name in data.getlist('invitees'):
     u = User.objects.get(name__icontains=invitee_name)
     event.invitees.append(u)
+  
+  #evernote stuff
+
   event.save()
   return 'OK'
 
@@ -146,13 +162,23 @@ def add_event():
 def respond(event_id):
   print 'hi'
   data = request.values
-  user_response = data.get('user_response','user response')
+  data = request.values
+  user_response = data.get('user_response',True)
   event = Event.objects.get(id=event_id)
+  
+  token = 'S=s1:U=8df7b:E=14b91fcbdb9:C=1443a4b91bb:P=1cd:A=en-devtoken:V=2:H=58cee1b9b995670db8f66230ec99b5e1'
+  store = EvernoteClient(token=token).get_note_store()
+  note = store.getNote(token, event.note_guid, True, True, True, True)
+
   if current_user.is_authenticated():
     responder = current_user
   else:
     responder = User.objects.get(id=data['cookie'])
-  r = Response(response=user_response, event=event.id, responder=responder.id)
+  try:
+    r = Response.objects.get(db.Q(event=event.id) & db.Q(responder.responder.id))
+  except:
+    r = Response(response=user_response, event=event.id, responder=responder.id)
+  r.response = user_response
   r.save()
   num_response = Response.objects(event=event).count()
   if num_response >= int(event.threshold):
@@ -160,6 +186,20 @@ def respond(event_id):
     event.final_from_field = event.suggested_from_time
     event.save()
     notify_users(event)
+
+  note.content = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
+
+  content = 'Selected date: ' + data.get('from_time_range', datetime.datetime.now().isoformat()) + '<br/>'
+
+  for i in event.invitees:
+    try:
+      r = Response.objects.get(db.Q(event=event.id) & db.Q(i.id))
+      content += i.name +  ' - Responded ' + str(r.response) + '<br />'
+    except Exception as e:
+      print str(e)
+      content += i.name +  ' - Still waiting for response' + '<br />'
+  note.content += '<en-note>%s</en-note>' % content
+  store.updateNote(note)
   return 'OK'
 
 # send out emails/notifications to users

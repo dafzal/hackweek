@@ -186,6 +186,7 @@ class Event(db.Document):
     status = db.StringField(default='started')
     creator = db.ReferenceField('User')
     threshold = db.IntField()
+    note_guid = db.StringField(default='b392ca98-2179-47f8-9a75-9f07f5b17963')
 
     def get_suggested_time(self):
       return get_match(invitees, from_time_range, to_time_range, datetime.timedelta(seconds=duration_minutes*60))

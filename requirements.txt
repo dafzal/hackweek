@@ -14,3 +14,5 @@ mongoengine==0.8.7
 pymongo==2.6.3
 flask-social
 python-dateutil
+evernote
+flask-sqlalchemy #for memsql
