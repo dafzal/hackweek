@@ -14,8 +14,11 @@ manager.add_command('runserver', Server(
 def syncdb():
     from cal.models import User
     from social.apps.flask_app import models
+    print 'dropping all'
     db.drop_all()
+    print 'creating all'
     db.create_all()
+    print 'done'
 
 if __name__ == '__main__':
   app.config['DEBUG'] = True

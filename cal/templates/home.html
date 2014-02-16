@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{{ url_for("social.auth", backend="facebook") }}">Facebook OAuth2</a> <br />
+<a href="">Facebook OAuth2</a> <br />
 <a href="/google_connect">Google Connect</a> <br />
 
 <h1>{% if user.is_authenticated()%}{{user.facebook_me()}}{% endif %}</h1>
+<h3>{% if user.is_authenticated()%}{{user.google_key}}{% endif %}</h3>
 {% endblock %}
 
 {% block scripts %}

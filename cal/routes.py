@@ -4,10 +4,11 @@ from flask import render_template, redirect, session, url_for, request
 from flask.ext.login import login_required, logout_user
 
 from cal import app
+from cal import db
 from oauth2client.client import OAuth2WebServerFlow
 from apiclient.discovery import build_from_document, build
 from oauth2client.file import Storage
-
+from oauth2client.client import OAuth2Credentials
 import httplib2
 
 
@@ -33,8 +34,27 @@ def logout():
 
 @app.route('/google_connect')
 def google_connect():
-  storage = Storage('calendar.dat')
-  credentials = storage.get()
+  print 'current key ' + str(current_user.google_key)
+  if not current_user.google_key:
+    return redirect(url_for('login'))
+  credentials = OAuth2Credentials.from_json(current_user.google_key)
+
+  if credentials is None or credentials.invalid == True:
+    return redirect(url_for('login'))
+
+  
+  http = httplib2.Http()
+  http = credentials.authorize(http)
+  service = build("calendar", "v3", http=http)
+  calendar_list = service.calendarList().list().execute()
+  print calendar_list
+  return redirect('/')
+
+@app.route('/test')
+def test():
+  if not current_user.google_key:
+    return redirect(url_for('login'))
+  credentials = OAuth2Credentials.from_json(current_user.google_key)
 
   if credentials is None or credentials.invalid == True:
       return redirect(url_for('login'))
@@ -43,8 +63,19 @@ def google_connect():
   http = credentials.authorize(http)
   service = build("calendar", "v3", http=http)
   calendar_list = service.calendarList().list().execute()
-  print calendar_list
-  return redirect('/')
+  import ipdb
+  ipdb.set_trace()
+  ids = [x['id'] for x in calendar_list['items']]
+  for calendar_id in ids:
+    page_token = None
+    while True:
+      events = service.events().list(calendarId='primary', pageToken=page_token).execute()
+      for event in events['items']:
+        print event['summary']
+      page_token = events.get('nextPageToken')
+      if not page_token:
+        break
+  return str(calendar_list) + '\n' + str(current_user.facebook_me())
 
 CLIENT_ID = '610521713571-3v093rdrgspspv9gf5kcgsgj4s1adjqj.apps.googleusercontent.com'
 CLIENT_SECRET = 'mKH_3DZFWGdP_NrG168OFNMn'
@@ -75,7 +106,11 @@ def oauth2callback():
     except Exception as e:
       print "Unable to get an access token because ", e.message
 
-  storage = Storage('calendar.dat')
-  storage.put(credentials)
+  current_user.google_key = credentials.to_json()
+  print 'google key set to ' + current_user.google_key
+  db.session.flush()
+  import ipdb
+  ipdb.set_trace()
+  #save
 
   return redirect(url_for('done'))

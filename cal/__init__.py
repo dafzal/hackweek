@@ -1,38 +1,38 @@
 from flask import Flask, url_for, abort, request, render_template, redirect, g
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask.ext.mongoengine import MongoEngine
 from flask.ext import login
 from raven.contrib.flask import Sentry
 
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mzuragfsrqnokk:cb5U50DdTvMIrJH1TtdH7zZxe6@ec2-54-235-132-177.compute-1.amazonaws.com:5432/ddia1c9eioov14'
+
+app.config['MONGODB_SETTINGS'] = {
+    'DB': 'calendar',
+    'HOST': 'paulo.mongohq.com',
+    'PORT': 10069,
+    'USERNAME': 'pieota4',
+    'PASSWORD': 'pieota4abc',
+    # 'USERNAME': 'pieota',
+    # 'PASSWORD': 'asd789supersonicpie234',
+    # 'HOST': 'candidate.2.mongolayer.com',
+    # 'PORT': 10088,
+}
 #connect('project1', host='mongodb://localhost/database_name')
 app.config['SECRET_KEY'] = 'supersecretkey12345'
-db = SQLAlchemy(app)
+db = MongoEngine(app)
 sentry = Sentry(app)
 
-
-app.config['SOCIAL_AUTH_USER_MODEL'] = 'cal.models.User'
-from social.apps.flask_app.routes import social_auth
-app.register_blueprint(social_auth)
-from social.apps.flask_app.models import init_social
-init_social(app, db)
-
-app.config['SOCIAL_AUTH_AUTHENTICATION_BACKENDS'] = (
-    'social.backends.facebook.FacebookOAuth2',
-    'social.backends.facebook.FacebookAppOAuth2',
-)
 app.config['SOCIAL_AUTH_FACEBOOK_KEY'] = '1463976000492316'
 app.config['SOCIAL_AUTH_FACEBOOK_SECRET'] = 'b2cb45b169e0349eeacab0cf9fdaee3d'
+app.config['SOCIAL_AUTH_GOOGLE_KEY'] = '610521713571-3v093rdrgspspv9gf5kcgsgj4s1adjqj.apps.googleusercontent.com'
+app.config['SOCIAL_AUTH_GOOGLE_SECRET'] = 'mKH_3DZFWGdP_NrG168OFNMn'
 app.config['SOCIAL_AUTH_FACEBOOK_SCOPE'] = ['email','user_about_me','user_events']
-
+app.config['SOCIAL_AUTH_GOOGLE_SCOPE'] = ['calendar']
 app.config['SOCIAL_GOOGLE'] = {
     'consumer_key': '610521713571.apps.googleusercontent.com',
     'consumer_secret': 'FJgybwIs_wU8eautMC41PRE0'
 }
 
-from social.apps.flask_app.template_filters import backends
-app.context_processor(backends)
 
 login_manager = login.LoginManager()
 login_manager.login_view = 'main'
@@ -48,8 +48,8 @@ from cal.models import User
 @login_manager.user_loader
 def load_user(userid):
     try:
-    	return User.query.get(int(userid))
-    except (TypeError, ValueError):
+    	return User.objects.get(id=userid)
+    except:
         pass
 # Make current user available on templates
 @app.context_processor
