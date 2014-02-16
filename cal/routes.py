@@ -7,7 +7,7 @@ from apiclient.discovery import build_from_document, build
 from oauth2client.file import Storage
 
 import httplib2
-
+import datetime
 
 @app.route('/')
 def main():
@@ -24,10 +24,22 @@ def logout():
     logout_user()
     return redirect('/')
 
+@app.route('/add_fakedata')
+def add_fakedata():
+  user1 = User(id=1234,username='frost_test',name='Frost Li TEST')
+  user1.save()
+  user2 = User(id=2345,username='frost_test2', name='Hello world')
+  user2.save()
+  event = Event(id=12345,name='Why not dinner?',from_time_range=datetime.datetime.now(),
+    to_time_range=datetime.datetime.now() + datetime.timedelta(hours=2),
+    location='birate',duration_minutes=120,creator_id=1234,threshold=1)
+  event.invitees.append(user2.id)
+  event.save()
+
 @app.route('/events/<user_id>')
 def events(user_id):
-  created_events = Events.objects().filter(Events.creator_id=user_id).all()
-  invited_events = Events.objects().filter(Events.invitees.any(id=user_id)).all()
+  created_events = Event.objects().filter(Event.creator_id=user_id).all()
+  invited_events = Event.objects().filter(Event.invitees.any(id=user_id)).all()
   results = {
     'created_events': created_events.to_json(),
     'invited_events': invited_events.to_json()

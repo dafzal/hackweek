@@ -3,6 +3,7 @@
 {% block content %}
 <a href="{{ url_for("social.auth", backend="facebook") }}">Facebook OAuth2</a> <br />
 <a href="/google_connect">Google Connect</a> <br />
+<a href="/add_fakedata">Add fake data</a>
 
 <h1>{% if user.is_authenticated()%}{{user.facebook_me()}}{% endif %}</h1>
 {% endblock %}

@@ -2,7 +2,7 @@ from flask.ext.login import UserMixin
 from cal import db
 import facebook
 
-users = db.Table('users',
+user_events = db.Table('user_events',
     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
     db.Column('event_id', db.Integer, db.ForeignKey('event.id'))
 )
@@ -48,7 +48,7 @@ class Event(db.Model):
     to_time_range = db.Column(db.DateTime)
     location = db.Column(db.String(200))
     duration_minutes = db.Column(db.Integer)
-    invitees = db.relationship('User', secondary=users,
+    invitees = db.relationship('User', secondary=user_events,
         backref=db.backref('events', lazy='dynamic'))
     final_from_time = db.Column(db.DateTime)
     suggested_from_time = db.Column(db.DateTime)
