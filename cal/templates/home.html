@@ -25,6 +25,7 @@
     height: 50; /* .push must be the same height as .footer */
   }
 </style>
+{% endblock %}
 {% block content %}
 <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
   <div class="container">
@@ -32,9 +33,42 @@
       <a class="navbar-brand" href="#">Let's Meet</a>
     </div>
     <ul class="nav navbar-nav navbar-right">
-      <li><a href="#">Sign In</a></li>
+      <li><a href="#" data-toggle="modal" data-target="#myModal">Sign In</a></li>
     </ul>
 </nav>
+
+{% macro social_login(provider_id, display_name, image_url) %}
+  <form action="{{ url_for('social.login', provider_id=provider_id) }}" method="POST">
+    <input type="image" src="{{url_for("static",filename=image_url)}}">
+  </form>
+{% endmacro %}
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Connect with Let's meet</h4>
+      </div>
+      <div class="modal-body">
+        <p> Scheduling meet ups with friends is so much easier with Let's meet. Connect with Facebook or Gmail to enjoy the automatic schedule fitting experience. No more long email threads overheads - Just send an invite and Let's meet! </p>
+        <div class="row">
+          <div class="col-md-6 text-right">
+            {{ social_login('facebook', 'Facebook', 'images/small_fb.png')}}
+          </div>
+          <div class="col-md-6 text-left"> 
+            {{ social_login('google', 'Google', 'images/small_google.png' )}}
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <div class="jumbotron white-bg">
   <div class="container">
@@ -43,7 +77,7 @@
         <h2>We make scheduling meet ups easy</h2>  
       </div>
       <div class="col-md-2 text-center">
-        <h2><a class="btn btn-primary btn-large">Get Started</a></h2> 
+        <h2><a class="btn btn-primary btn-large" data-toggle="modal" data-target="#myModal">Get Started</a></h2> 
       </div>
     </div>
   </div>
@@ -51,20 +85,11 @@
 
 <img src="{{url_for("static",filename="images/home.png")}}" class="img-responsive"></img>
 
-{% macro social_login(provider_id, display_name) %}
-  <form action="{{ url_for('social.login', provider_id=provider_id) }}" method="POST">
-    <input type="submit" value="Login with {{ display_name }}" />
-  </form>
-{% endmacro %}
-
-<div class="container" style='height:150px; padding:20px'>
-  <center>
-    {{ social_login('facebook', 'Facebook' )}}
-    {{ social_login('google', 'Google' )}}
-    <h3><button class="btn btn-primary btn-large">Sign up with Facebook</h3>
-    <h3><button class="btn btn-info btn-large">Sign up with Google</h3>
-  </center>
+<h1></h1>
+<div class="container">
+  
 </div>
+<h1></h1>
 
 <div class="footer">
   <nav class="navbar navbar-inverse" role="navigation">
@@ -79,7 +104,4 @@
     </div>
   </nav>
 </div>
-{% endblock %}
-
-{% block scripts %}
 {% endblock %}
