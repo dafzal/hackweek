@@ -1,13 +1,20 @@
 from flask.ext.login import UserMixin
 from cal import db
 import facebook
+from flask.ext.security import Security, MongoEngineUserDatastore, \
+    UserMixin, RoleMixin, login_required
 
 class User(db.Document, UserMixin):
+  fb_id = db.StringField()
+  google_id = db.StringField()
   google_key = db.StringField()
   fb_key = db.StringField()
   created_events = db.ReferenceField('Event')
   username = db.StringField()
   name = db.StringField()
+  active = db.BooleanField(default=True)
+  confirmed_at = db.DateTimeField()
+  roles = db.ListField(db.ReferenceField('Role'), default=[])
   def to_json(self):
     return {
         'id': self.id,
@@ -21,6 +28,21 @@ def dump_datetime(value):
         return None
     return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
 
+class Role(db.Document, RoleMixin):
+    name = db.StringField(max_length=80, unique=True)
+    description = db.StringField(max_length=255)
+
+
+class Connection(db.Document):
+    user_id = db.ReferenceField('User')
+    provider_id = db.StringField()
+    provider_user_id = db.StringField()
+    access_token = db.StringField()
+    secret = db.StringField()
+    display_name = db.StringField()
+    profile_url = db.StringField()
+    image_url = db.StringField()
+    rank = db.IntField()
 class Response(db.Document):
     responder = db.ReferenceField('User')
     event = db.ReferenceField('Event')
