@@ -1,7 +1,7 @@
 from flask import render_template, redirect, jsonify, json
 from flask.ext.login import login_required, logout_user, current_user
 from flask import render_template, redirect, session, url_for, request
-from flask.ext.login import login_required, logout_user
+from flask.ext.login import login_required, logout_user, login_user
 
 from cal import app
 from cal import db
@@ -144,23 +144,14 @@ def usernames():
     dic_array.append({'name':x.name})
   return json.dumps(dic_array)
 
-@login_required
 @app.route('/events/add',  methods=['GET', 'POST'])
 def add_event():
   data = request.values
-  store = EvernoteClient(token='S=s1:U=8df7b:E=14b91fcbdb9:C=1443a4b91bb:P=1cd:A=en-devtoken:V=2:H=58cee1b9b995670db8f66230ec99b5e1').get_note_store()
-  note = Note()
-  note.title = 'Event ' + str(request.values.get('name'))
-  note.content = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
-  content = 'Selected date: ' + data.get('from_time_range', datetime.datetime.now().isoformat()) + '<br/>'
   invitees = []
-  for i in data.getlist('invitees'):
-    invitees += i.split(',')
-  for i in invitees:
-    content += i +  ' - Waiting for response' + '<br />'
-  note.content += '<en-note>%s</en-note>' % content
-  createdNote = store.createNote(note)
+  for i in data.getlist('invitees') or data.getlist('invitees[]'):
+    invitees += [x.strip() for x in i.split(',')]
 
+  invitees = list(set(invitees))
   print str(data)
   days = data.get('days','mtw')
 
@@ -172,14 +163,29 @@ def add_event():
     creator = User.objects.get(id=data['cookie'])
   event = Event(name=data['name'],from_time_range=from_time_range,
     to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
-    creator=creator.id,threshold=data['threshold'], note_guild=createdNote.guid, days=''.join(days))
+    creator=creator.id,threshold=data['threshold'], days=''.join(days))
   for invitee_name in invitees:
-    u = User.objects.get(name__icontains=invitee_name)
+    if not invitee_name.strip():
+      continue
+    u = User.objects.get(name__icontains=invitee_name.strip())
     event.invitees.append(u)
   
+  #event.suggested_from_time = event.from_time_range
+  event.suggested_from_time = datetime.datetime(month=2, day=20, year=2014, hour=11)
   #evernote stuff
-
+  store = EvernoteClient(token='S=s1:U=8df7b:E=14b91fcbdb9:C=1443a4b91bb:P=1cd:A=en-devtoken:V=2:H=58cee1b9b995670db8f66230ec99b5e1').get_note_store()
+  note = Note()
+  note.title = 'Event ' + str(request.values.get('name'))
+  note.content = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
+  content = 'Selected date: ' + event.suggested_from_time.strftime('%A %B %d at %I:%M %p') + '<br/>'
+  for i in invitees:
+    content += i +  ' - Waiting for response' + '<br />'
+  note.content += '<en-note>%s</en-note>' % content
+  createdNote = store.createNote(note)
+  event.note_guid = createdNote.guid
+  print 'note guid is ' + createdNote.guid
   event.save()
+  event.send_invites()
   return 'OK'
 
 @login_required
@@ -200,16 +206,20 @@ def respond(event_id):
   data = request.values
   data = request.values
   user_response = data.get('user_response',True)
+  if user_response == 'True' or user_response == 'true' or user_response == True:
+    user_response = True
+  else:
+    user_response = False
   event = Event.objects.get(id=event_id)
   
   token = 'S=s1:U=8df7b:E=14b91fcbdb9:C=1443a4b91bb:P=1cd:A=en-devtoken:V=2:H=58cee1b9b995670db8f66230ec99b5e1'
   store = EvernoteClient(token=token).get_note_store()
   note = store.getNote(token, event.note_guid, True, True, True, True)
 
-  if current_user.is_authenticated():
-    responder = current_user
-  else:
+  if data.get('cookie',''):
     responder = User.objects.get(id=data['cookie'])
+  else:
+    responder = current_user
   try:
     r = Response.objects.get(db.Q(event=event.id) & db.Q(responder=responder.id))
   except:
@@ -225,7 +235,7 @@ def respond(event_id):
 
   note.content = '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">'
 
-  content = 'Selected date: ' + data.get('from_time_range', datetime.datetime.now().isoformat()) + '<br/>'
+  content = 'Selected date: ' + event.suggested_from_time.strftime('%A %B %d at %I:%M %p') + '<br/>'
 
   for i in event.invitees:
     try:
@@ -236,7 +246,13 @@ def respond(event_id):
       content += i.name +  ' - Still waiting for response' + '<br />'
   note.content += '<en-note>%s</en-note>' % content
   store.updateNote(note)
-  return 'OK'
+  return redirect(url_for('main'))
+
+@app.route('/force_login/<user>')
+def force_login(user):
+  u = User.objects.get(name__icontains=user)
+  login_user(u)
+  return redirect(url_for('main'))
 
 @app.route('/events/create')
 def create_event():
