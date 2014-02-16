@@ -21,6 +21,11 @@ def dump_datetime(value):
         return None
     return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
 
+class Response(db.Document):
+    responder = db.ReferenceField('User')
+    event = db.ReferenceField('Event')
+    response = db.BooleanField()
+
 class Event(db.Document):
     name = db.StringField(default='New Event')
     from_time_range = db.DateTimeField()

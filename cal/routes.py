@@ -10,7 +10,7 @@ from apiclient.discovery import build_from_document, build
 from oauth2client.file import Storage
 from oauth2client.client import OAuth2Credentials
 import httplib2
-import datetime
+import datetime, time
 from cal.models import User,Event
 
 @app.route('/')
@@ -56,6 +56,42 @@ def events(user_id):
     'invited_events': invited_events.to_json()
   }
   return jsonify(results)
+
+@app.route('/events/add')
+def add_event():
+  data = request.POST
+  from_time_range = time.strptime(data['from_time_range'], "%d %b %y %H:%M")
+  to_time_range = time.strptime(data['to_time_range'], "%d %b %y %H:%M") 
+  creator = User.objects.get(id=data['user_id'])
+  event = Event(name=data['name'],from_time_range=from_time_range,
+    to_time_range=to_time_range,location=data['location'],duration_minutes=data['duration'],
+    creator=creator,threshold=threshold)
+  for invitee_id in data['invitees']:
+    u = User.objects.get(id=invitee_id)
+    event.invitees.append(u)
+  event.save()
+  return 'OK'
+
+@app.route('/events/respond')
+def respond():
+  data = reqeust.POST
+  response = data['response']
+  event = Event.objects.get(id=data['event_id'])
+  responder = User.objects.get(id=data['responder'])
+  r = Response(response=response, event=event, responder=responder)
+  r.save()
+  num_response = Response.objects(event=event).count()
+  if num_response >= event.threshold:
+    event.status = 'Finalized'
+    event.final_from_field = event.suggested_from_time
+    event.save()
+    notify_users(event)
+  return 'OK'
+
+# send out emails/notifications to users
+def notify_users(event):
+  # for invitee in event.invitees:
+
 
 @app.route('/google_connect')
 def google_connect():
