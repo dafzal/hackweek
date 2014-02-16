@@ -171,6 +171,8 @@ class Response(db.Document):
     responder = db.ReferenceField('User')
     event = db.ReferenceField('Event')
     response = db.BooleanField()
+    def to_json(self):
+      return {"reponder": self.responder.to_json(), "response":self.response}
 
 class Event(db.Document):
     name = db.StringField(default='New Event')
@@ -184,10 +186,14 @@ class Event(db.Document):
     status = db.StringField(default='started')
     creator = db.ReferenceField('User')
     threshold = db.IntField()
+    note_guid = db.StringField(default='b392ca98-2179-47f8-9a75-9f07f5b17963')
+    days = db.StringField() #smtwrfy
 
     def get_suggested_time(self):
       return get_match(invitees, from_time_range, to_time_range, datetime.timedelta(seconds=duration_minutes*60))
 
+    def get_responses(self):
+      return Response.objects(event=self)
     def to_json(self, is_creator=False):
         json = {
             'id': str(self.id),
@@ -195,7 +201,16 @@ class Event(db.Document):
             'duration_minutes': self.duration_minutes,
             'status': self.status,
             'creator_id': str(self.creator.id),
-            'invitees': [ invitee.to_json() for invitee in self.invitees]
+            'invitees': [ invitee.to_json() for invitee in self.invitees],
+            'from_time_range': self.from_time_range.isoformat(),
+            'to_time_range': self.to_time_range.isoformat(),
+            'duration': self.duration_minutes,
+            'suggested_from_time': self.from_time_range.isoformat(),
+            'status': self.status,
+            'threshold': self.threshold,
+            'creator': self.creator.to_json(),
+            'responses': [x.to_json() for x in self.get_responses()],
+            'days': self.days,
         }
         # if self.status == 'finalized':
         #     json = json.update({
