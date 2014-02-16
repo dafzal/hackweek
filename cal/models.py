@@ -190,30 +190,27 @@ class Event(db.Document):
 
     def to_json(self, is_creator=False):
         json = {
-            'id': self.id,
+            'id': str(self.id),
             'name': self.name,
             'duration_minutes': self.duration_minutes,
-            'status': status,
-            'creator_id': creator.id,
-            'invitees': self.get_invitees_json
+            'status': self.status,
+            'creator_id': str(self.creator.id),
+            'invitees': [ invitee.to_json() for invitee in self.invitees]
         }
-        if self.status == 'finalized':
-            json = json.update({
-                'final_from_time': dump_datetime(final_from_time)
-            })
-        elif is_creator:
-            json = json.update({
-                'from_time_range': dump_datetime(from_time_range),
-                'to_time_range': dump_datetime(to_time_range),
-                'threshold': threshold
-            })
-        else:
-            json = json.update({
-                'suggested_from_time': dump_datetime(suggested_from_time)
-            })
+        # if self.status == 'finalized':
+        #     json = json.update({
+        #         'final_from_time': dump_datetime(final_from_time)
+        #     })
+        # elif is_creator:
+        #     json = json.update({
+        #         'from_time_range': dump_datetime(from_time_range),
+        #         'to_time_range': dump_datetime(to_time_range),
+        #         'threshold': threshold
+        #     })
+        # else:
+        #     json = json.update({
+        #         'suggested_from_time': dump_datetime(suggested_from_time)
+        #     })
         return json
 
-    @property
-    def get_invitees_json(self):
-       return [ invitee.to_json for invitee in self.invitees]
-
+  
