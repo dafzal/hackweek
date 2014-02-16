@@ -10,7 +10,8 @@ from apiclient.discovery import build_from_document, build
 from oauth2client.file import Storage
 from oauth2client.client import OAuth2Credentials
 import httplib2
-
+import datetime
+from cal.models import User,Event
 
 @app.route('/')
 def main():
@@ -32,6 +33,30 @@ def logout():
   logout_user()
   return redirect('/')
 
+@app.route('/add_fakedata')
+def add_fakedata():
+  user1 = User(username='frost_test',name='Frost Li TEST')
+  user1.save()
+  user2 = User(username='frost_test2', name='Hello world')
+  user2.save()
+  event = Event(name='Why not dinner?',from_time_range=datetime.datetime.now(),
+    to_time_range=datetime.datetime.now() + datetime.timedelta(hours=2),
+    location='birate',duration_minutes=120,creator=user2.id,threshold=1)
+  event.invitees.append(user2)
+  event.save()
+  return 'done'
+
+@app.route('/events/<user_id>')
+def events(user_id):
+  u = User.objects.get(id=user_id)
+  created_events = Event.objects(creator=u)
+  invited_events = Event.objects(invitees=u)
+  results = {
+    'created_events': created_events.to_json(),
+    'invited_events': invited_events.to_json()
+  }
+  return jsonify(results)
+
 @app.route('/google_connect')
 def google_connect():
   print 'current key ' + str(current_user.google_key)
@@ -47,6 +72,7 @@ def google_connect():
   http = credentials.authorize(http)
   service = build("calendar", "v3", http=http)
   calendar_list = service.calendarList().list().execute()
+
   print calendar_list
   return redirect('/')
 
