@@ -1,6 +1,7 @@
 from flask import Flask, url_for, abort, request, render_template, redirect, g
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext import login
+from raven.contrib.flask import Sentry
 
 app = Flask(__name__)
 
@@ -8,6 +9,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://mzuragfsrqnokk:cb5U50DdTvM
 #connect('project1', host='mongodb://localhost/database_name')
 app.config['SECRET_KEY'] = 'supersecretkey12345'
 db = SQLAlchemy(app)
+sentry = Sentry(app)
 
 
 app.config['SOCIAL_AUTH_USER_MODEL'] = 'cal.models.User'
